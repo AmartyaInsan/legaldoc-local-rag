@@ -10,7 +10,7 @@ This is **not** an automated pipeline with connectors. Files are uploaded manual
 
 ## Target Users
 
-Technically-minded people who want to build production RAG systems using AI coding tools (Claude Code, Cursor, etc.). They don't need to know Python or React - that's the AI's job.
+Technically-minded people who want to build production RAG systems using AI coding tools (Antigravity, Cursor, etc.). They don't need to know Python or React - that's the AI's job.
 
 **They need to understand:**
 - RAG concepts deeply (chunking, embeddings, retrieval, reranking)
@@ -91,7 +91,7 @@ There is no right answer—this is a real architectural choice you'll face in bu
 
 **In the video, I chose Option A**—completely removing the Responses API code from the codebase and any related schema from the database. This keeps things simple and focused on the OpenAI-compatible Chat Completions pattern going forward.
 
-**This is a lesson in steering Claude Code**: you need to clearly communicate your decision and guide the AI to implement it correctly. Be explicit about what you want removed, refactored, or kept.
+**This is a lesson in steering Antigravity**: you need to clearly communicate your decision and guide the AI to implement it correctly. Be explicit about what you want removed, refactored, or kept.
 
 ---
 

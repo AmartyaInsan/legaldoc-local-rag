@@ -1,5 +1,5 @@
 ---
-description: Onboard Claude Code into the codebase
+description: Onboard Antigravity into the codebase
 ---
 
 # Context
@@ -10,7 +10,7 @@ description: Onboard Claude Code into the codebase
    - Run `git ls-files` to see all tracked files
 
 2. **Read key files**
-   - CLAUDE.md, PRD.md, and any other architecture docs
+   - AGENTS.md, PRD.md, and any other architecture docs
    - Entry points and config files
    - Core schemas/models
 

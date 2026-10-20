@@ -1,0 +1,38 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# Python virtual environment & cache
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.sqlite3
+*.db
+local_data/
+backend/local_data/
+
+# Node / Frontend build & dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log

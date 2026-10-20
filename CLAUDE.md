@@ -1,4 +1,4 @@
-# CLAUDE.md
+# CLAUDE.md (See AGENTS.md for Antigravity)
 
 RAG app with chat (default) and document ingestion interfaces. Config via env vars, no admin UI.
 
