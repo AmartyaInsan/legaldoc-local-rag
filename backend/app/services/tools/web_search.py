@@ -75,15 +75,23 @@ def clean_search_query(query: str) -> str:
     """
     Strip conversational filler in Indonesian & English so search engines receive high-signal keywords.
     E.g. 'Tolong cari di web apa ada update ollama terbaru ?' -> 'update ollama terbaru'
+    'Please see in the web for updated trademark rule in Indonesia' -> 'updated trademark rule in Indonesia'
     """
     cleaned = query.strip()
     patterns = [
-        r"^(?:tolong\s+)?(?:coba\s+)?(?:bisakah\s+)?(?:cari(?:kan)?|searching)\s+(?:di|lewat|melalui)\s+(?:web|internet|google|bing|duckduckgo)(?:\s+tentang|\s+mengenai|\s+soal|\s+apakah|\s+apa ada|\s+apa)?\s*",
-        r"^(?:tolong\s+)?(?:coba\s+)?(?:cari(?:kan)?|temukan)\s+(?:info(?:rmasi)?|update|berita)?\s+(?:tentang|soal|mengenai)?\s*",
-        r"^(?:please\s+)?(?:can you\s+)?search\s+(?:the\s+)?(?:web|internet|online)\s+(?:for|about)?\s*",
-        r"^(?:what(?:'s|\s+is)\s+the\s+latest\s+on\s+)",
+        # Indonesian conversational preambles
+        r"^(?:tolong\s+)?(?:coba\s+)?(?:bisakah\s+|dapatkah\s+)?(?:cari(?:kan)?|searching|lihat|cek|tinjau|periksa)\s+(?:di|lewat|melalui|pada)?\s*(?:web|internet|google|bing|duckduckgo|online)(?:\s+(?:tentang|mengenai|soal|terkait|apakah ada|apa ada|apakah|apa))?\s*",
+        r"^(?:tolong\s+)?(?:coba\s+)?(?:cari(?:kan)?|temukan|lihat|cek)\s+(?:info(?:rmasi)?|update|berita)?\s+(?:tentang|soal|mengenai|terkait)?\s*",
+        r"^(?:di|pada)\s+(?:web|internet|google|bing|duckduckgo|online)[,\s]+(?:tolong\s+|coba\s+)?(?:cari(?:kan)?|lihat|cek|temukan)?\s*",
         r"^(?:apa\s+(?:ada\s+)?update\s+terbaru\s+(?:dari|tentang)\s+)",
         r"^(?:apakah\s+ada\s+update\s+terbaru\s+(?:dari|tentang)\s+)",
+
+        # English conversational preambles (see in the web, look in the web, search online, etc.)
+        r"^(?:please\s+)?(?:can you\s+|could you\s+|would you\s+)?(?:see|look(?:\s+up)?|search|check|find|browse|query|get)\s+(?:in|into|on|at|across|from|through)?\s*(?:the\s+)?(?:web|internet|online|google|bing|duckduckgo)\s*(?:for|about|regarding|to find)?\s*",
+        r"^(?:please\s+)?(?:can you\s+|could you\s+|would you\s+)?search\s+(?:online\s+)?(?:for|about|regarding)?\s*",
+        r"^(?:on|in|into|across|from)\s+(?:the\s+)?(?:web|internet|online)[,\s]+(?:please\s+)?(?:see|look(?:\s+up)?|search|check|find|browse)?\s*(?:for|about|regarding)?\s*",
+        r"^(?:what(?:'s|\s+is)\s+the\s+latest\s+(?:update\s+)?(?:on|about)\s+)",
+        r"^(?:what\s+does\s+(?:the\s+)?(?:web|internet)\s+say\s+about\s+)",
     ]
     for pat in patterns:
         cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE).strip()
@@ -103,12 +111,14 @@ def extract_targeted_web_query(query: str) -> str:
     if not q:
         return ""
 
-    # 1. Match explicit web search clause anywhere in the sentence
+    # 1. Match explicit web search clause anywhere in the sentence (Indonesian & English)
     pattern = (
-        r"(?:dan\s+|serta\s+)?(?:tolong\s+|coba\s+|bisakah\s+)?"
-        r"(?:cari(?:kan)?|searching|search)\s+(?:di|lewat|melalui|the|on)\s+"
-        r"(?:web|internet|google|bing|duckduckgo|online)\s*"
-        r"(?:tentang|mengenai|soal|apakah ada|apa ada|apakah|apa|for|about)?\s*([^?!\n]+)"
+        r"(?:dan\s+|serta\s+|and\s+)?"
+        r"(?:tolong\s+|coba\s+|bisakah\s+|dapatkah\s+|please\s+|can\s+you\s+|could\s+you\s+|would\s+you\s+)?"
+        r"(?:cari(?:kan)?|searching|search|look(?:\s+up)?|see|check|find|browse|query|get|lihat|cek|tinjau|periksa)\s+"
+        r"(?:di|lewat|melalui|pada|in|into|on|at|across|from|through)?\s*"
+        r"(?:the\s+)?(?:web|internet|google|bing|duckduckgo|online)\s*"
+        r"(?:tentang|mengenai|soal|terkait|apakah ada|apa ada|apakah|apa|for|about|regarding|to find)?\s*([^?!\n]+)"
     )
     m = re.search(pattern, q, re.IGNORECASE)
     if m:
@@ -117,9 +127,9 @@ def extract_targeted_web_query(query: str) -> str:
         target = q
 
     # 2. Remove conversational greetings & endings
-    target = re.sub(r"(?i)\b(?:thanks|terima kasih|makasih|tolong ya|please|halo|hai)\b", "", target)
+    target = re.sub(r"(?i)\b(?:thanks|thank you|terima kasih|makasih|tolong ya|please|halo|hai|hey|hi)\b", "", target)
 
-    # 3. Strip document-related commands from web search query
+    # 3. Strip document-related commands from web search query (Indonesian & English)
     target = re.sub(
         r"(?i)\b(?:cek|analisis|bandingkan|baca|telaah)\s+(?:semua\s+)?(?:dokumen|file|laporan)(?:\s+(?:ini|yang ada|yang aku berikan))?\b",
         "",
@@ -130,14 +140,24 @@ def extract_targeted_web_query(query: str) -> str:
         "",
         target,
     )
+    target = re.sub(
+        r"(?i)\b(?:check|analyze|compare|read|review)\s+(?:all\s+)?(?:documents?|files?|reports?)(?:\s+(?:here|uploaded|provided))?\b",
+        "",
+        target,
+    )
+    target = re.sub(
+        r"(?i)\b(?:give|provide|create)\s+(?:a\s+)?(?:comparison|table|matrix|summary)(?:\s+only)?(?:\s+for\s+each\s+document)?\b",
+        "",
+        target,
+    )
 
     # Clean leading/trailing punctuation & conversational filler
     target = clean_search_query(target)
     target = re.sub(r"^[,\-–\s.]+|[,\-–\s.]+$", "", target).strip()
 
     # If query is about Indonesian regulations, ensure 'indonesia' is included for authoritative results
-    if re.search(r"\b(?:peraturan|uu|undang-undang|merek|paten|hak cipta|desain industri|permenkum|permenkumham)\b", target, re.IGNORECASE) and not re.search(
-        r"\bindonesia\b", target, re.IGNORECASE
+    if re.search(r"\b(?:peraturan|uu|undang-undang|merek|paten|hak cipta|desain industri|permenkum|permenkumham|trademark|patent|copyright)\b", target, re.IGNORECASE) and not re.search(
+        r"\bindonesia(?:n)?\b", target, re.IGNORECASE
     ):
         target = f"{target} indonesia"
 
@@ -431,9 +451,11 @@ class WebSearchService:
             return ""
 
         lines = [
-            "### HASIL PENCARIAN WEB TERVERIFIKASI (Sumber Eksternal Resmi & Kredibel)",
-            "INSTRUKSI PENTING: Pengguna meminta informasi/pembaruan eksternal dari web. Gunakan hasil pencarian web yang telah difilter dari sumber kredibel di bawah ini untuk menjawab secara akurat.",
-            "- WAJIB cantumkan kutipan tautan sumber dengan format [Judul Sumber](URL).",
+            "### HASIL PENCARIAN WEB TERVERIFIKASI (Sumber Eksternal Resmi & Kredibel) / VERIFIED WEB SEARCH SOURCES",
+            "INSTRUKSI PENTING / CRITICAL INSTRUCTIONS:",
+            "- WAJIB cantumkan kutipan tautan sumber dengan format hyperlink Markdown langsung: [Judul Sumber](URL).",
+            "- DILARANG KERAS membungkus tautan dengan tanda backtick/tanda kutip kode (JANGAN menulis `[Judul](URL)` atau `http...`), agar tautan dapat diklik langsung oleh pengguna menuju situs aslinya.",
+            "- MANDATORY FOR ENGLISH: Cite web sources directly as active clickable Markdown links without backticks: [Source Title](URL).",
             "- DILARANG KERAS mengutip situs unggahan pengguna yang tidak terverifikasi (seperti Scribd, Studocu, Academia, dsb.).",
             "- DILARANG mengarang nomor undang-undang/peraturan yang tidak disebutkan di dalam sumber di bawah ini.",
             "---",

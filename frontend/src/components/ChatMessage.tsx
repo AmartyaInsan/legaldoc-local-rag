@@ -51,16 +51,27 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedCitation]);
 
-  // Convert inline citations like [1], [2], [1, 2], [Dokumen 1] to markdown anchor links for clickable badges
+  // Convert inline citations like [1], [2], [1, 2], [Dokumen 1] to markdown anchor links for clickable badges,
+  // and unwrap any backticks around markdown links or web URLs so they render as clickable links.
   const processedContent = useMemo(() => {
     if (isUser || !message.content) return message.content;
     let text = message.content;
-    // Multi citations: [1, 2] or [1, 2, 3]
+
+    // 1. Strip backticks wrapping markdown links (e.g. `[Source 2](https://...)` -> [Source 2](https://...))
+    text = text.replace(/`(\[[^\]]+\]\([^\)]+\))`(?!\()/g, '$1');
+    // 2. Strip backticks wrapping parenthesized URLs (e.g. `(https://...)` -> (https://...))
+    text = text.replace(/`\((https?:\/\/[^\s\)]+)\)`/g, '($1)');
+    // 3. Strip backticks wrapping raw URLs (e.g. `https://skclaw.id/...` -> https://skclaw.id/...)
+    text = text.replace(/`(https?:\/\/[^\s`\)]+)`/g, '$1');
+    // 4. Transform reference-style [Source]: https://... to standard [Source](https://...)
+    text = text.replace(/\[([^\]]+)\]:\s*(https?:\/\/[^\s\)]+)/g, '[$1]($2)');
+
+    // 5. Multi citations: [1, 2] or [1, 2, 3]
     text = text.replace(/(?<!\[)\[(\d+)\s*,\s*(\d+)\](?!\()/g, '[$1](#cite-$1) [$2](#cite-$2)');
     text = text.replace(/(?<!\[)\[(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\](?!\()/g, '[$1](#cite-$1) [$2](#cite-$2) [$3](#cite-$3)');
-    // Prefix citations: [Dokumen 1] or [Kutipan 1]
+    // 6. Prefix citations: [Dokumen 1] or [Kutipan 1]
     text = text.replace(/(?<!\[)\[(?:Kutipan|Dokumen)\s*(\d+)\](?!\()/gi, '[$1](#cite-$1)');
-    // Standard single citations: [1], [2], etc.
+    // 7. Standard single citations: [1], [2], etc.
     text = text.replace(/(?<!\[)\[(\d+)\](?!\()/g, '[$1](#cite-$1)');
     return text;
   }, [message.content, isUser]);
@@ -441,9 +452,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                         );
                       }
                       return (
-                        <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline inline-flex items-center gap-0.5">
-                          {children}
-                          <ExternalLink className="w-3 h-3 inline opacity-70" />
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-cyan-400 hover:text-cyan-300 underline font-medium inline-flex items-center gap-1 transition decoration-cyan-500/40 hover:decoration-cyan-300"
+                        >
+                          <span>{children}</span>
+                          <ExternalLink className="w-3.5 h-3.5 inline opacity-80 shrink-0" />
                         </a>
                       );
                     },
@@ -528,13 +544,28 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                 </div>
               </div>
 
-              <button
-                onClick={() => setSelectedCitation(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-                title="Tutup (Esc)"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                {selectedCitation.url && (
+                  <a
+                    href={selectedCitation.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition cursor-pointer"
+                    title="Buka situs web asli di tab baru"
+                  >
+                    <Globe className="w-3.5 h-3.5 shrink-0" />
+                    <span>Buka Situs</span>
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                  </a>
+                )}
+                <button
+                  onClick={() => setSelectedCitation(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                  title="Tutup (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body: Grounding Passage & Highlighted Content */}
@@ -614,6 +645,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               </div>
 
               <div className="flex items-center gap-2">
+                {selectedCitation.url && (
+                  <a
+                    href={selectedCitation.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition cursor-pointer"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>Kunjungi Situs Asli</span>
+                    <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={() => {

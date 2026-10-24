@@ -48,6 +48,11 @@ def clean_boilerplate_signatures(text: str) -> str:
     for pat in patterns:
         text = re.sub(pat, "", text)
 
+    # 3. Clean backticks wrapping markdown links or URLs so they stay clickable in UI
+    text = re.sub(r"`(\[[^\]]+\]\([^\)]+\))`", r"\1", text)
+    text = re.sub(r"`(https?://[^\s`\)]+)`", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]:\s*(https?://[^\s\)]+)", r"[\1](\2)", text)
+
     return text.rstrip()
 
 

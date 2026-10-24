@@ -20,12 +20,34 @@ SQL_TRIGGERS = [
 ]
 
 WEB_TRIGGERS = [
-    r"\bweb search\b", r"\bsearch (?:the )?web\b", r"\bonline\b",
-    r"\blatest\b", r"\bnews\b", r"\bcurrent\b", r"\bgoogle\b", r"\bbing\b", r"\bduckduckgo\b",
-    r"\bcari(?:kan)?\s+(?:di|lewat|melalui)\s+(?:web|internet|google|bing|duckduckgo)\b",
-    r"\bberita terbaru\b", r"\btren\b",
+    # English explicit web search triggers (including "see/look in the web", "search the internet", etc.)
+    r"\b(?:see|look(?:\s+up)?|search|find|check|browse|query|get)\s+(?:in|into|on|at|across|from|through)?\s*(?:the\s+)?(?:web|internet)\b",
+    r"\b(?:see|look(?:\s+up)?|search|find|check|browse)\s+online\b",
+    r"\b(?:in|into|on|across|from|through)\s+the\s+(?:web|internet)\b",
+    r"\bweb\s+search\b",
+    r"\bsearch\s+(?:the\s+)?web\b",
+    r"\bonline\s+search\b",
+    r"\b(?:google|bing|duckduckgo)\s+(?:search|it|for)\b",
+    r"\bsearch\s+(?:with|on|via)?\s*(?:google|bing|duckduckgo)\b",
+
+    # English freshness, news, and update queries
+    r"\blatest\b",
+    r"\bnews\b",
+    r"\bcurrent\b",
+    r"\bupdated?\s+(?:trademark|patent|law|rule|rules|regulation|regulations|policy|policies|guideline|guidelines|status|version|news|info|act)\b",
+    r"\bupdates?\s+(?:on|about|regarding|for)\b",
+    r"\b(?:any|is there any|are there any)\s+updates?\b",
+
+    # Indonesian explicit web search triggers
+    r"\b(?:cari(?:kan)?|lihat|cek|tinjau|periksa)\s+(?:di|lewat|melalui|pada)?\s*(?:web|internet|google|bing|duckduckgo|online)\b",
+    r"\b(?:di|lewat|melalui|pada)\s+(?:web|internet)\b",
+    r"\bcari(?:\s+secara)?\s+online\b",
+
+    # Indonesian freshness & update triggers
+    r"\bberita terbaru\b",
+    r"\btren\b",
     r"\bapa(?:kah)?\s+ada\s+update\b",
-    r"\bupdate\s+(?:terbaru|terkini|peraturan)\b",
+    r"\bupdate\s+(?:terbaru|terkini|peraturan|hukum|aturan|uu)\b",
     r"\brilis\s+(?:terbaru|terkini)\b",
 ]
 

@@ -279,7 +279,7 @@ async def _generate_rag_stream(
             "4. **DOMAIN ADAPTABILITY**:\n"
             "   - For **Legal/Procedural** questions (e.g., registration flow, patent rules, nuclear liability), provide a structured Step-by-Step breakdown citing exact Articles/Sections.\n"
             "   - For **Inventory, KPI Presentations, or Client Presentations**, present exact numbers, targets vs. actuals, stock statuses, and timelines clearly.\n"
-            "5. **EXTERNAL WEB SOURCES**: When Web Search results are provided, cite only verified sources using `[Source Title](URL)`. Never invent placeholder signatures like `[Your Name]`."
+            "5. **EXTERNAL WEB SOURCES & CLICKABLE LINKS**: When Web Search results are provided, cite verified sources as direct, clickable Markdown hyperlinks: [Source Title](URL). You MUST NOT wrap links in backticks (do NOT write `[Source](URL)` or `http...`), so users can click them directly to visit the original site. Never invent placeholder signatures like `[Your Name]`."
         )
     else:
         # Default Monolingual Indonesian: balanced, thorough, informative, and fast
@@ -295,7 +295,7 @@ async def _generate_rag_stream(
             f"{quote_rule}"
             "3. **STRUKTUR RAPI & JELAS**: Susun penjelasan dengan alur yang runtut (gunakan penomoran tahapan, butir-butir ketentuan, rujukan pasal/dokumen, atau tabel ringkas jika relevan) agar pengguna memahami informasi secara utuh dan jelas.\n"
             "4. **KONTEN BERBOBOT TANPA BASA-BASI**: Sajikan informasi secara fokus dan berdasar pada konteks dokumen. Dilarang menyertakan salam pembuka/penutup panjang atau placeholder tanda tangan seperti `[Your Name]` atau `[Reviewer\'s Name]`."
-            "5. **STRICT GROUNDING & SITASI SEBARIS**: Setiap fakta wajib bersumber dari dokumen rujukan. Sematkan sitasi sebaris nomor seperti [1], [2] tepat di akhir kalimat fakta yang diambil dari Dokumen 1, 2. Jika suatu informasi tidak tertulis dalam dokumen aktif, nyatakan secara jujur bahwa informasi tersebut tidak ditemukan."
+            "5. **STRICT GROUNDING, SITASI & TAUTAN WEB**: Setiap fakta wajib bersumber dari dokumen rujukan atau web. Jika menyertakan tautan web, WAJIB sajikan sebagai hyperlink Markdown langsung: [Judul Sumber](URL) tanpa tanda backtick agar pengguna dapat langsung mengkliknya. Sematkan sitasi sebaris nomor seperti [1], [2] tepat di akhir kalimat fakta yang diambil dari Dokumen 1, 2. Jika suatu informasi tidak tertulis dalam dokumen aktif, nyatakan secara jujur bahwa informasi tersebut tidak ditemukan."
         )
 
     system_prompt = request.system_prompt or base_instructions
