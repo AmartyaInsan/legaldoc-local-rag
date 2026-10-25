@@ -19,7 +19,7 @@ For an executive breakdown and technical presentation suitable for law firms, en
 
 - 📄 **Presentation Slide Deck (PDF)**: [**`Retrieval-Augmented Generation (RAG) for Law Firms`**](./docs/Retrieval-Augmented_Generation_RAG_for_Law_Firms.pdf) *(by Amartya)*
 - 🖼️ **System Architecture Flow (Clean Mermaid)**: [**PNG Image**](./system_architecture_diagram.png) | [**Interactive HTML Source**](./docs/system_architecture_diagram.html)
-- 🖼️ **Executive Presentation Visual (Dark Mode)**: [**High-Resolution PNG (3200×1856)**](./architecture_diagram.png) | [**Vector SVG**](./architecture_diagram.svg)
+
 
 <p align="center">
   <img src="system_architecture_diagram.png" alt="Closed-Environment Agentic RAG System Architecture" width="100%" />
