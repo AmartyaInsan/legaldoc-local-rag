@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Arsitektur Sistem Agentic RAG</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 1920px;
+      height: 1080px;
+      background: radial-gradient(circle at 50% 0%, #151d30 0%, #080c15 60%, #05070c 100%);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      padding: 48px 64px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Ambient background glows */
+    .glow-cyan {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      top: -150px;
+      left: 10%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .glow-purple {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      bottom: -150px;
+      right: 15%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .title-group h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-group h1 span.highlight {
+      background: linear-gradient(135deg, #38bdf8 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-group p {
+      font-size: 16px;
+      color: #94a3b8;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .badges {
+      display: flex;
+      gap: 12px;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    .badge-lock {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .badge-engine {
+      background: rgba(14, 165, 233, 0.12);
+      border-color: rgba(14, 165, 233, 0.35);
+      color: #38bdf8;
+    }
+
+    /* Main Grid Layout */
+    .architecture-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Pipeline Sections */
+    .pipeline-section {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 20px;
+      padding: 22px 28px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .section-title.lane-1 { color: #38bdf8; }
+    .section-title.lane-2 { color: #c084fc; }
+
+    .section-tag {
+      font-size: 12px;
+      color: #64748b;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Steps Flow Container */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* Step Card */
+    .step-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      flex: 1;
+      height: 100%;
+      min-height: 135px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .step-card.active-emerald {
+      border-color: rgba(52, 211, 153, 0.35);
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(6, 78, 59, 0.2) 100%);
+    }
+
+    .step-card.active-cyan {
+      border-color: rgba(56, 189, 248, 0.35);
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(12, 74, 110, 0.2) 100%);
+    }
+
+    .step-card.active-purple {
+      border-color: rgba(192, 132, 252, 0.35);
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(88, 28, 135, 0.2) 100%);
+    }
+
+    .step-card.active-amber {
+      border-color: rgba(251, 191, 36, 0.35);
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(120, 53, 15, 0.2) 100%);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .card-heading {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.45;
+    }
+
+    .card-chips {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #cbd5e1;
+    }
+
+    .chip-accent-cyan { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+    .chip-accent-green { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+    .chip-accent-purple { color: #c084fc; border-color: rgba(192, 132, 252, 0.3); }
+
+    /* Flow Arrows */
+    .flow-arrow {
+      color: #475569;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Sub-grid for Router Tools */
+    .tools-subgrid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      flex: 2.2;
+    }
+
+    .tool-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tool-box.t-hybrid { border-color: rgba(56, 189, 248, 0.3); background: rgba(14, 165, 233, 0.07); }
+    .tool-box.t-subagent { border-color: rgba(192, 132, 252, 0.3); background: rgba(168, 85, 247, 0.07); }
+    .tool-box.t-sql { border-color: rgba(52, 211, 153, 0.3); background: rgba(16, 185, 129, 0.07); }
+    .tool-box.t-web { border-color: rgba(251, 191, 36, 0.3); background: rgba(245, 158, 11, 0.07); }
+
+    .tool-box-header {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tool-box-desc {
+      font-size: 11.5px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* Footer info */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(148, 163, 184, 0.1);
+      font-size: 12.5px;
+      color: #64748b;
+    }
+
+    .footer-highlight {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-cyan"></div>
+  <div class="glow-purple"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="title-group">
+      <h1>
+        Arsitektur Sistem <span class="highlight">Agentic RAG Lokal</span>
+      </h1>
+      <p>Alur Pemrosesan Dokumen & Tanya-Jawab Berbasis Dokumen Hukum 100% Close-Environment</p>
+    </div>
+    <div class="badges">
+      <div class="badge badge-lock">
+        <span>🔒 100% Close-Environment</span>
+      </div>
+      <div class="badge badge-engine">
+        <span>⚡ Ollama (qwen2.5:7b)</span>
+      </div>
+      <div class="badge badge-engine">
+        <span>🗄️ ChromaDB + SQLite</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Flow -->
+  <div class="architecture-grid">
+
+    <!-- LANE 1: Ingestion Pipeline -->
+    <div class="pipeline-section">
+      <div class="section-header">
+        <div class="section-title lane-1">
+          <span>📁 Alur 1: Ingestion Pipeline (Upload & Indeksasi Dokumen)</span>
+        </div>
+        <div class="section-tag">Tahap Otomatisasi Input Knowledge Base</div>
+      </div>
+
+      <div class="flow-row">
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">📄</div>
+              <div class="card-heading">1. Dokumen Masuk</div>
+            </div>
+            <div class="card-desc">Upload berbagai format dokumen legal dan bisnis oleh pengguna.</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip chip-accent-cyan">.PDF</span>
+            <span class="chip">.DOCX</span>
+            <span class="chip">.PPTX</span>
+            <span class="chip">.XLSX</span>
+            <span class="chip">.CSV</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">➔</div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">✂️</div>
+              <div class="card-heading">2. Parser & Chunking</div>
+            </div>
+            <div class="card-desc">Teks diekstrak, dicek SHA-256 hash (deduplikasi), lalu dipotong menjadi 800 karakter.</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip">SHA-256 Hash</span>
+            <span class="chip">800 Chars</span>
+            <span class="chip">150 Overlap</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">➔</div>
+
+        <!-- Step 3 -->
+        <div class="step-card active-cyan">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🧠</div>
+              <div class="card-heading">3. Ollama AI Engine</div>
+            </div>
+            <div class="card-desc">Teks diubah menjadi vektor 768-dimensi & metadata (judul, summary, hashtag) diekstrak.</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip chip-accent-cyan">nomic-embed-text (768-dim)</span>
+            <span class="chip">qwen2.5 (Meta)</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">➔</div>
+
+        <!-- Step 4 -->
+        <div class="step-card active-emerald">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">💾</div>
+              <div class="card-heading">4. Local Storage</div>
+            </div>
+            <div class="card-desc">Tersimpan permanen di laptop tanpa koneksi internet atau server pihak ketiga.</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip chip-accent-green">ChromaDB (HNSW Vektor)</span>
+            <span class="chip chip-accent-green">SQLite (Teks BM25)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LANE 2: Retrieval & Agentic Routing -->
+    <div class="pipeline-section" style="flex: 1.25;">
+      <div class="section-header">
+        <div class="section-title lane-2">
+          <span>💬 Alur 2: Agentic Retrieval & Generation Pipeline (Tanya-Jawab & Routing Cerdas)</span>
+        </div>
+        <div class="section-tag">Tahap Eksekusi Prompt & Formulasi Jawaban</div>
+      </div>
+
+      <div class="flow-row">
+        <!-- Step 1 User Prompt -->
+        <div class="step-card" style="flex: 0.85;">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">👤</div>
+              <div class="card-heading">1. User Prompt</div>
+            </div>
+            <div class="card-desc">Pengguna memasukkan pertanyaan melalui UI Chat (Bilingual ID ↔ EN).</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip">React + Tailwind</span>
+            <span class="chip">Workspace Filter</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">➔</div>
+
+        <!-- Step 2 Agent Router -->
+        <div class="step-card active-purple" style="flex: 0.95;">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🧭</div>
+              <div class="card-heading">2. Agent Router</div>
+            </div>
+            <div class="card-desc">Mendeteksi intent pengguna, bahasa, dan memilih tool eksekusi yang paling tepat.</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip chip-accent-purple">Intent Classification</span>
+            <span class="chip">ID ↔ EN Translation</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">➔</div>
+
+        <!-- Step 3 Dynamic Tools Execution (4 Sub-tools) -->
+        <div class="tools-subgrid">
+          <div class="tool-box t-hybrid">
+            <div class="tool-box-header">⚡ Hybrid Search</div>
+            <div class="tool-box-desc">Gabungan ChromaDB Vektor + SQLite BM25 menggunakan Reciprocal Rank Fusion (RRF) & Reranker.</div>
+          </div>
+
+          <div class="tool-box t-subagent">
+            <div class="tool-box-header">🤖 Sub-Agent</div>
+            <div class="tool-box-desc">Membaca sekuensial awal-tengah-akhir untuk audit mendalam atau komparasi N-dokumen.</div>
+          </div>
+
+          <div class="tool-box t-sql">
+            <div class="tool-box-header">📊 Text-to-SQL</div>
+            <div class="tool-box-desc">Query langsung ke SQLite untuk hitungan dokumen atau analisa data tabel CSV & XLSX.</div>
+          </div>
+
+          <div class="tool-box t-web">
+            <div class="tool-box-header">🌐 Web Search</div>
+            <div class="tool-box-desc">DuckDuckGo scraper ke portal hukum terpercaya. Bersifat opt-in (hanya saat diminta).</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">➔</div>
+
+        <!-- Step 4 Grounded LLM Response -->
+        <div class="step-card active-emerald" style="flex: 0.95;">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">✨</div>
+              <div class="card-heading">4. Grounded Output</div>
+            </div>
+            <div class="card-desc">Ollama qwen2.5:7b menyusun jawaban streaming berbasis fakta dokumen rujukan.</div>
+          </div>
+          <div class="card-chips">
+            <span class="chip chip-accent-green">Sitasi Klik [1] [2]</span>
+            <span class="chip">Zero-Hallucination</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>Arsitektur Terpadu: <span class="footer-highlight">React + FastAPI + Ollama (qwen2.5:7b) + ChromaDB + SQLite</span></div>
+    <div>Sistem LegalDoc Agentic RAG • Bebas Cloud API • Privasi Terjamin 100%</div>
+  </footer>
+</body>
+</html>

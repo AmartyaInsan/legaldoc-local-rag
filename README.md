@@ -13,6 +13,41 @@ As someone learning to build modern Agentic RAG systems with FastAPI and React, 
 
 ---
 
+## 📊 Presentation Deck & System Architecture
+
+For an executive breakdown and technical presentation suitable for law firms, enterprises, and stakeholders, review the complete slide deck and visual architecture diagrams:
+
+- 📄 **Presentation Slide Deck (PDF)**: [**`Retrieval-Augmented Generation (RAG) for Law Firms`**](./docs/Retrieval-Augmented_Generation_RAG_for_Law_Firms.pdf) *(by Amartya)*
+- 🖼️ **System Architecture Flow (Clean Mermaid)**: [**PNG Image**](./system_architecture_diagram.png) | [**Interactive HTML Source**](./docs/system_architecture_diagram.html)
+- 🖼️ **Executive Presentation Visual (Dark Mode)**: [**High-Resolution PNG (3200×1856)**](./architecture_diagram.png) | [**Vector SVG**](./architecture_diagram.svg)
+
+<p align="center">
+  <img src="system_architecture_diagram.png" alt="Closed-Environment Agentic RAG System Architecture" width="100%" />
+</p>
+<p align="center"><em>Figure 1: Close-Environment System Architecture & 2-Stage Pipeline (as featured on Slide 5)</em></p>
+
+<details>
+<summary><b>🔍 Click to view Alternative Dark-Mode Infographic Diagram</b></summary>
+
+<p align="center">
+  <img src="architecture_diagram.png" alt="Dark Mode Agentic RAG Infographic" width="100%" />
+</p>
+
+</details>
+
+### 📑 Slide Deck Overview (15-Slide Masterclass Presentation)
+| Section | Slides | Key Insights & Features |
+|---|---|---|
+| **Problem & Opportunity** | Slides 1–3 | High-level confidentiality in law firms, data leakage risks to public cloud AI, and knowledge management challenges. |
+| **Architectural Solution** | Slides 4–5 | 100% closed-environment local execution, independent on-disk storage, and end-to-end processing pipeline (Ingestion ➔ Intelligent Routing ➔ Grounded Generation). |
+| **UI & Knowledge Management** | Slides 6–7 | Modern dark-mode dual-view workspace, SHA-256 deduplication, AI metadata extraction, chunking (800 chars), and secure cascade deletion. |
+| **Search & Workspace Control** | Slides 8–9 | 3 search modes (Hybrid RRF + Reranker, Dense Vector, Sparse BM25), multi-document checkbox filtering (`📚 3/5 Active Docs`), and chat thread organization (Rename, Pin, Delete). |
+| **Grounding & Sub-Agents** | Slides 10–12 | Clickable inline citations (`[1]`, `[2]`), Grounding Passage Inspector, automated delegation to Document Comparator Sub-Agent for parallel multi-document comparison, and structured side-by-side matrices. |
+| **Integrations & Multilingual** | Slides 13–14 | Privacy-preserved opt-in DuckDuckGo web search focused on official domains (`.go.id`), automatic Indonesian ↔ English language mirroring, and cross-lingual legal term mapping. |
+| **Roadmap & Strategy** | Slide 15 | Domain fine-tuning on Indonesian legal corpus (UU/Perpres), advanced OCR pipeline for scanned court archives, RBAC, and continuous evaluation benchmarks. |
+
+---
+
 ## 🚀 Key Architectural Evolution & Enhancements
 
 ### 1. 100% Close-Environment & Local Offline Storage

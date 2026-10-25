@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture System Diagram</title>
+    <!-- Tailwind CSS for layout and styling the container -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid.js library -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        
+        // Initialize Mermaid with custom clean theme settings
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#1f2937',
+                primaryBorderColor: '#e5e7eb',
+                lineColor: '#6b7280',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                clusterBkg: '#f8fafc',
+                clusterBorder: '#cbd5e1'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis' // Smooth curves for flow lines
+            }
+        });
+    </script>
+    <style>
+        /* Base typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        /* Style adjustments for better SVG rendering */
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 md:p-8">
+
+    <!-- Clean white container card for the diagram -->
+    <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl w-full max-w-7xl overflow-x-auto border border-gray-200">
+        
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-800">System Architecture</h1>
+            <p class="text-gray-500 text-sm mt-1">100% Close-Environment Local System</p>
+        </div>
+
+        <!-- Mermaid Diagram Container -->
+        <div class="mermaid">
+            flowchart TD
+                %% Component Styles (Pastel backgrounds with distinct borders)
+                classDef docs fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,rx:8px,ry:8px;
+                classDef process fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#581c87,rx:8px,ry:8px;
+                classDef ai fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#14532d,rx:8px,ry:8px;
+                classDef db fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#7c2d12,rx:8px,ry:8px;
+                classDef ui fill:#fef2f2,stroke:#ef4444,stroke-width:2px,color:#7f1d1d,rx:8px,ry:8px;
+                classDef router fill:#fefce8,stroke:#eab308,stroke-width:2px,color:#713f12,rx:8px,ry:8px;
+                classDef clusterStyle fill:#ffffff,stroke:#cbd5e1,stroke-width:2px,rx:12px,ry:12px;
+
+                subgraph SYSTEM ["🔒 100% CLOSE-ENVIRONMENT LOCAL SYSTEM (NO CLOUD DB)"]
+                    direction TB
+                    
+                    %% -------------------------------------------------------------
+                    %% FLOW 1: DOCUMENT INGESTION PIPELINE
+                    %% -------------------------------------------------------------
+                    subgraph FLOW1 ["[ FLOW 1: DOCUMENT INGESTION PIPELINE ]"]
+                        direction LR
+                        D1("📄 Original Documents<br/>(.pdf, .docx, .pptx,<br/>.xlsx, .csv, .txt)"):::docs
+                        P1["✂️ Text Parser & Chunking<br/>(800 char) + SHA-256 Hash Check"]:::process
+                        A1["🧠 Local Ollama<br/>(nomic-embed-text,<br/>qwen2.5 for Metadata)"]:::ai
+                        DB1[("💾 Local Database<br/>ChromaDB (768-dim Vector)<br/>SQLite (BM25 Text & Tables)")]:::db
+
+                        D1 --> P1
+                        P1 --> A1
+                        A1 --> DB1
+                    end
+
+                    %% -------------------------------------------------------------
+                    %% FLOW 2: INTELLIGENT Q&A PIPELINE
+                    %% -------------------------------------------------------------
+                    subgraph FLOW2 ["[ FLOW 2: INTELLIGENT Q&A (AGENTIC RAG & SUB-AGENT PIPELINE) ]"]
+                        direction LR
+                        
+                        U1("💬 User Question<br/>(React + Vite UI)"):::ui
+                        R1{"🧭 Agent Router<br/>(Intent Detection &<br/>ID ↔ EN Translation)"}:::router
+                        
+                        %% Path 1
+                        H1["🔍 Hybrid Search<br/>(ChromaDB + SQLite)"]:::process
+                        H2["RRF Score Merge<br/>+ Reranker"]:::process
+                        
+                        %% Path 2
+                        S1["🤖 Sub-Agent<br/>(Isolated Context)"]:::process
+                        S2["Sequential N-Doc Read<br/>(Audit/Comparison)"]:::process
+                        
+                        %% Path 3
+                        T1["📊 Text-to-SQL"]:::process
+                        T2["Calculate Statistics /<br/>SQLite Table Query"]:::process
+                        
+                        %% Path 4
+                        W1["🌐 Web Search"]:::process
+                        W2["DuckDuckGo<br/>(Only if requested / Opt-In)"]:::process
+                        
+                        %% LLM Synthesis and Output
+                        L1["🧠 Ollama LLM (qwen2.5:7b)<br/>(Synthesize Response +<br/>Anti-Hallucination Guardrail)"]:::ai
+                        ANS("✨ Streaming Answer +<br/>Clickable Citations [1][2]"):::ui
+                        
+                        %% Connections for Flow 2
+                        U1 --> R1
+                        
+                        R1 -->|1| H1
+                        H1 --> H2
+                        H2 --> L1
+                        
+                        R1 -->|2| S1
+                        S1 --> S2
+                        S2 --> L1
+                        
+                        R1 -->|3| T1
+                        T1 --> T2
+                        T2 --> L1
+                        
+                        R1 -->|4| W1
+                        W1 --> W2
+                        W2 --> L1
+                        
+                        L1 --> ANS
+                        ANS -.->|"Loop"| U1
+                    end
+                    
+                    %% Enforce vertical stacking of the subgraphs
+                    FLOW1 ~~~ FLOW2
+                end
+        </div>
+    </div>
+
+</body>
+</html>
